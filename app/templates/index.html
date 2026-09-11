@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexa Edu — منصة التعلم الذكي</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              teal: {
+                50: '#f0fdf4',
+                500: '#14b8a6',
+                600: '#0d9488',
+                700: '#0f766e',
+                900: '#134e4a',
+              },
+              navy: {
+                800: '#1e293b',
+                900: '#0f172a',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <link rel="stylesheet" href="/static/css/waves.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2 max-w-sm"></div>
+
+    <!-- Premium Navigation -->
+    <nav class="premium-nav sticky top-0 z-40">
+        <div class="nav-inner">
+            <div class="brand" onclick="switchTab('marketplace')">
+                <div class="brand-mark"><i data-lucide="sparkles"></i></div>
+                <div class="brand-copy">
+                    <div class="brand-name">Nexa<span>Edu</span></div>
+                    <div class="brand-tagline">Learn smarter. Go further.</div>
+                </div>
+            </div>
+
+            <div class="desktop-nav-links">
+                <button id="btn-tab-marketplace" onclick="switchTab('marketplace')" class="nav-link tab-btn active">اكتشف الكورسات</button>
+                <button id="btn-tab-student_dashboard" onclick="switchTab('student_dashboard')" class="nav-link tab-btn">لوحة الطالب</button>
+                <button id="btn-tab-teacher_studio" onclick="switchTab('teacher_studio')" class="nav-link tab-btn">استوديو المعلم</button>
+                <button id="btn-tab-admin_panel" onclick="switchTab('admin_panel')" class="nav-link tab-btn">الإدارة</button>
+            </div>
+
+            <div class="nav-actions">
+                <button onclick="toggleTheme()" id="themeToggleBtn" class="icon-btn" title="تغيير المظهر">
+                    <i id="themeIcon" data-lucide="moon"></i>
+                    <span id="themeLabel" class="sr-only">الوضع الليلي</span>
+                </button>
+                <button onclick="toggleNotificationsDrawer()" class="icon-btn relative" title="الإشعارات">
+                    <i data-lucide="bell"></i>
+                    <span id="notifBadge" class="notif-badge hidden">0</span>
+                </button>
+                <div id="authBox" class="auth-box"></div>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="mobile-bottom-nav">
+        <button onclick="switchTab('marketplace')"><i data-lucide="compass"></i><span>اكتشف</span></button>
+        <button onclick="switchTab('student_dashboard')"><i data-lucide="layout-dashboard"></i><span>تعلمي</span></button>
+        <button onclick="openModal('ragDrawerModal')" class="mobile-ai"><i data-lucide="bot"></i><span>AI Tutor</span></button>
+        <button onclick="toggleNotificationsDrawer()"><i data-lucide="bell"></i><span>التنبيهات</span></button>
+    </div>
+
+    <!-- Premium Hero -->
+    <header class="premium-hero">
+        <canvas id="waveCanvas"></canvas>
+        <div class="hero-glow hero-glow-one"></div>
+        <div class="hero-glow hero-glow-two"></div>
+        <div class="hero-content">
+            <div class="hero-eyebrow"><span class="live-dot"></span> منصة تعليمية مدعومة بالذكاء الاصطناعي</div>
+            <h2>تعلم بذكاء.<br><span>ابنِ مستقبلك.</span></h2>
+            <p>كورسات عملية من معلمين متخصصين، تعلم شخصي، حصص مباشرة، ومساعد AI يفهم رحلتك التعليمية.</p>
+            <div class="hero-actions">
+                <button onclick="document.getElementById('courseGrid').scrollIntoView({behavior:'smooth'})" class="primary-cta"><i data-lucide="compass"></i> استكشف الكورسات</button>
+                <button onclick="openModal('loginModal')" class="secondary-cta"><i data-lucide="arrow-left"></i> ابدأ رحلتك</button>
+            </div>
+            <div class="hero-trust">
+                <span><i data-lucide="shield-check"></i> تعلم آمن</span>
+                <span><i data-lucide="zap"></i> تعلم شخصي بالـ AI</span>
+                <span><i data-lucide="video"></i> حصص مباشرة</span>
+            </div>
+        </div>
+    </header>
+
+
+    <section class="value-strip">
+        <div class="value-item"><div class="value-icon"><i data-lucide="route"></i></div><div><strong>مسار تعلم شخصي</strong><span>المنصة تفهم هدفك وتوجه تقدمك</span></div></div>
+        <div class="value-item"><div class="value-icon"><i data-lucide="book-open-check"></i></div><div><strong>محتوى موثوق</strong><span>كورسات منشورة بعد مراجعة الإدارة</span></div></div>
+        <div class="value-item"><div class="value-icon"><i data-lucide="users"></i></div><div><strong>معلمون متخصصون</strong><span>محتوى من صناع تعليم حقيقيين</span></div></div>
+        <div class="value-item"><div class="value-icon"><i data-lucide="brain-circuit"></i></div><div><strong>ذكاء اصطناعي تعليمي</strong><span>مساعد يفهم سياق رحلتك التعليمية</span></div></div>
+    </section>
+
+    <!-- Main Container -->
+    <main class="flex-grow container mx-auto px-4 md:px-8 py-10">
+
+        <!-- TAB 1: MARKETPLACE -->
+        <section id="tab-marketplace" class="tab-content">
+            <div class="section-heading">
+                <div>
+                    <span class="section-kicker">NEXA LEARNING MARKETPLACE</span>
+                    <h3>اكتشف ما يستحق وقتك</h3>
+                    <p>اختار مسارك، وتعلم من محتوى عملي مصمم لتحقيق نتيجة حقيقية.</p>
+                </div>
+                <div class="course-count"><strong id="courseCount">0</strong><span>كورس متاح</span></div>
+            </div>
+
+            <div class="marketplace-toolbar">
+                <div class="search-wrap">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="searchInput" placeholder="ابحث عن كورس، مهارة، أو معلم...">
+                </div>
+                <div class="category-pills">
+                    <button onclick="loadCourses()" class="category-pill active">الكل</button>
+                    <button onclick="loadCourses('', 1)" class="category-pill">البرمجة</button>
+                    <button onclick="loadCourses('', 2)" class="category-pill">الثانوية واللغات</button>
+                    <button onclick="loadCourses('', 3)" class="category-pill">الذكاء الاصطناعي</button>
+                </div>
+            </div>
+
+            <div id="courseGrid" class="course-grid"></div>
+        </section>
+
+        <!-- TAB 2: STUDENT DASHBOARD -->
+        <section id="tab-student_dashboard" class="tab-content hidden">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-800 dark:text-white">كورساتي ومتابعة التعلم</h3>
+                    <p class="text-slate-500 text-sm">تابع تقدمك الدراسي والحصص المباشرة والاختبارات القادمة على Nexa</p>
+                </div>
+                <button onclick="openModal('ragDrawerModal')" class="bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-lg hover:shadow-teal-500/25 transition"><i data-lucide="bot"></i> معلم الذكاء الاصطناعي</button>
+            </div>
+            <div id="enrolledCoursesList"></div>
+        </section>
+
+        <!-- TAB 3: TEACHER STUDIO -->
+        <section id="tab-teacher_studio" class="tab-content hidden">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-800 dark:text-white">استوديو المعلم وإنشاء المحتوى</h3>
+                    <p class="text-slate-500 text-sm">إدارة الكورسات، الطلاب، الحصص المباشرة ومتابعة الأرباح</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="openModal('scheduleLiveModal')" class="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs px-4 py-3 rounded-xl shadow-lg transition"><i data-lucide="radio"></i> جدولة حصة مباشرة</button>
+                    <button onclick="openModal('createCourseModal')" class="bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs px-4 py-3 rounded-xl shadow-lg transition"><i data-lucide="plus"></i> إنشاء كورس جديد</button>
+                </div>
+            </div>
+
+            <div id="teacherEarningsBox"></div>
+        </section>
+
+        <!-- TAB 4: ADMIN PANEL -->
+        <section id="tab-admin_panel" class="tab-content hidden">
+            <div class="mb-6">
+                <h3 class="text-2xl font-bold text-slate-800 dark:text-white">لوحة الإدارة الحاكمة والمراجعة</h3>
+                <p class="text-slate-500 text-sm">اعتماد المعلمين، مراجعة الكورسات، وإدارة عمولة المنصة (20%)</p>
+            </div>
+            <div id="adminStatsBox"></div>
+        </section>
+    </main>
+
+    <!-- FLOATING RAG AI TUTOR BUTTON -->
+    <button onclick="openModal('ragDrawerModal')" class="fixed bottom-6 right-6 z-40 bg-gradient-to-tr from-teal-600 to-emerald-500 text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 flex items-center gap-2 group">
+        <span class="text-xl"><i data-lucide="bot"></i></span>
+        <span class="text-xs font-bold max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-500 whitespace-nowrap pl-1">اسأل معلم الذكاء الاصطناعي</span>
+    </button>
+
+    <!-- MODAL: NOTIFICATIONS DRAWER -->
+    <div id="notifDrawerModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-end hidden">
+        <div class="bg-white dark:bg-slate-900 h-full max-w-md w-full p-6 shadow-2xl flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl"><i data-lucide="bell"></i></span>
+                        <h4 class="font-bold text-slate-900 dark:text-white text-sm">التنبيهات والإشعارات اللحظية</h4>
+                    </div>
+                    <button onclick="closeModal('notifDrawerModal')" class="text-slate-400 hover:text-slate-600">×</button>
+                </div>
+
+                <div id="notifList" class="space-y-3 h-[75vh] overflow-y-auto"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: LOGIN / REGISTER FOR REAL USERS & TEACHERS -->
+    <div id="loginModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+                <h3 id="authModalTitle" class="text-xl font-bold text-slate-900 dark:text-white">تسجيل الدخول إلى Nexa</h3>
+                <button onclick="closeModal('loginModal')" class="text-slate-400 hover:text-slate-600">×</button>
+            </div>
+
+            <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-4 text-xs font-bold">
+                <button type="button" id="tabSwitchLogin" onclick="toggleAuthForm('LOGIN')" class="flex-1 py-2 bg-white dark:bg-slate-700 rounded-lg shadow-sm text-teal-700 dark:text-teal-300">تسجيل الدخول</button>
+                <button type="button" id="tabSwitchRegister" onclick="toggleAuthForm('REGISTER')" class="flex-1 py-2 text-slate-600 dark:text-slate-400">حساب جديد</button>
+            </div>
+
+            <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3">
+                <div id="registerNameGroup" class="hidden">
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الاسم بالكامل</label>
+                    <input type="text" id="authFullName" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 rounded-xl p-2.5 text-xs focus:outline-none focus:border-teal-600">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">البريد الإلكتروني</label>
+                    <input type="email" id="authEmail" required class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 rounded-xl p-2.5 text-xs focus:outline-none focus:border-teal-600">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">كلمة السر</label>
+                    <input type="password" id="authPassword" required class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 rounded-xl p-2.5 text-xs focus:outline-none focus:border-teal-600">
+                </div>
+                
+                <div id="registerRoleGroup" class="hidden space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">نوع الحساب</label>
+                        <select id="authRole" onchange="toggleTeacherFields(this.value)" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 rounded-xl p-2.5 text-xs focus:outline-none focus:border-teal-600">
+                            <option value="STUDENT">طالب (تعلم واشتراك في الكورسات)</option>
+                            <option value="TEACHER">معلم (إنشاء كورسات وحصص مباشرة)</option>
+                        </select>
+                    </div>
+
+                    <div id="teacherExtraFields" class="hidden space-y-2 bg-teal-50 dark:bg-slate-800 p-3 rounded-xl border border-teal-200 dark:border-teal-800">
+                        <span class="text-[11px] font-bold text-teal-800 dark:text-teal-300 block mb-1">بيانات الاستلام المباشر للمعلم:</span>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">رقم فودافون كاش الخاص بك</label>
+                            <input type="text" id="authVoda" placeholder="010xxxxxxxx" class="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl p-2 text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">حساب إنستا باي (InstaPay IPA)</label>
+                            <input type="text" id="authInsta" placeholder="name@instapay" class="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl p-2 text-xs">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="authSubmitBtn" class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs py-3 rounded-xl shadow-lg transition mt-4">
+                    تسجيل الدخول ➔
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 1: COURSE DETAILS -->
+    <div id="courseDetailModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+                <h3 id="courseDetailTitle" class="text-xl font-bold text-slate-900 dark:text-white"></h3>
+                <button onclick="closeModal('courseDetailModal')" class="text-slate-400 hover:text-slate-600">×</button>
+            </div>
+            <p id="courseDetailTeacher" class="text-xs text-teal-700 dark:text-teal-400 font-bold mb-3"></p>
+            <p id="courseDetailDesc" class="text-sm text-slate-600 dark:text-slate-300 mb-6 leading-relaxed"></p>
+
+            <h4 class="font-bold text-sm text-slate-800 dark:text-white mb-3">المنهج الدراسي والدروس:</h4>
+            <div id="syllabusList" class="mb-6"></div>
+
+            <div class="flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800 pt-4">
+                <button onclick="closeModal('courseDetailModal')" class="text-slate-500 text-xs font-bold px-4 py-2">إغلاق المعاينة</button>
+                <button id="enrollBtn" class="bg-teal-600 text-white font-bold px-6 py-3 rounded-xl shadow-lg hover:bg-teal-500 transition text-xs"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: CHECKOUT WITH VODAFONE CASH & INSTAPAY -->
+    <div id="checkoutModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white">إتمام الدفع والاشتراك في Nexa</h3>
+                <button onclick="closeModal('checkoutModal')" class="text-slate-400 hover:text-slate-600">×</button>
+            </div>
+            
+            <div class="bg-teal-50 dark:bg-slate-800 border border-teal-200 dark:border-slate-700 p-4 rounded-2xl mb-5 text-center">
+                <span class="text-xs text-slate-500 dark:text-slate-400 block">إجمالي قيمة الكورس:</span>
+                <span id="checkoutAmountText" class="text-2xl font-black text-teal-700 dark:text-teal-400">0 EGP</span>
+            </div>
+
+            <!-- Payment Method Tabs -->
+            <div class="mb-5">
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">اختر طريقة الدفع المناسبة:</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button type="button" onclick="selectPaymentMethod('VODAFONE_CASH')" id="payBtnVoda" class="p-3 border-2 border-teal-600 bg-teal-50 dark:bg-slate-800 text-teal-800 dark:text-teal-300 rounded-xl text-center text-xs font-bold transition">📱 فودافون كاش</button>
+                    <button type="button" onclick="selectPaymentMethod('INSTAPAY')" id="payBtnInsta" class="p-3 border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 rounded-xl text-center text-xs font-bold hover:border-teal-500 transition">⚡ إنستا باي</button>
+                    <button type="button" onclick="selectPaymentMethod('CARD')" id="payBtnCard" class="p-3 border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 rounded-xl text-center text-xs font-bold hover:border-teal-500 transition">💳 فيزا / كارت</button>
+                </div>
+            </div>
+
+            <!-- Dynamic Payment Instructions Box -->
+            <div id="paymentDetailsBox" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 rounded-2xl mb-5">
+                <div id="vodaInstructions">
+                    <span class="text-xs text-slate-500 dark:text-slate-400 block mb-1">رقم محفظة المعلم لاستلام تحويلات فودافون كاش:</span>
+                    <div class="flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 px-4 py-2.5 rounded-xl font-mono text-base font-bold text-slate-800 dark:text-white mb-3">
+                        <span id="teacherVodaNumber">01012345678</span>
+                        <button onclick="navigator.clipboard.writeText(document.getElementById('teacherVodaNumber').innerText); showToast('تم نسخ الرقم!', 'success')" class="text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 px-2.5 py-1 rounded text-slate-700 dark:text-slate-300">نسخ 📋</button>
+                    </div>
+                </div>
+                <div id="instaInstructions" class="hidden">
+                    <span class="text-xs text-slate-500 dark:text-slate-400 block mb-1">عنوان حساب إنستا باي الخاص بالمعلم (InstaPay IPA):</span>
+                    <div class="flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 px-4 py-2.5 rounded-xl font-mono text-base font-bold text-slate-800 dark:text-white mb-3">
+                        <span id="teacherInstaHandle">teacher@instapay</span>
+                        <button onclick="navigator.clipboard.writeText(document.getElementById('teacherInstaHandle').innerText); showToast('تم نسخ الحساب!', 'success')" class="text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 px-2.5 py-1 rounded text-slate-700 dark:text-slate-300">نسخ 📋</button>
+                    </div>
+                </div>
+
+                <div id="checkoutFormFields" class="space-y-3 pt-2">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">رقم المحفظة / الهاتف المحول منه</label>
+                        <input type="text" id="checkoutSenderPhone" placeholder="مثال: 010xxxxxxxx" class="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl p-2.5 text-xs focus:outline-none focus:border-teal-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">رقم العملية / المرجع (Transaction Ref)</label>
+                        <input type="text" id="checkoutTxRef" placeholder="أدخل رقم عملية التحويل المكتوب في الرسالة..." class="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl p-2.5 text-xs focus:outline-none focus:border-teal-600">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 border-t border-slate-100 dark:border-slate-800 pt-4">
+                <button type="button" onclick="closeModal('checkoutModal')" class="text-slate-500 text-xs font-bold px-4 py-2">إلغاء</button>
+                <button type="button" onclick="processFinalCheckout()" class="bg-teal-600 text-white font-bold px-6 py-3 rounded-xl shadow-lg hover:bg-teal-500 text-xs">تأكيد التحويل والاشتراك ➔</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: SCHEDULE LIVE CLASS -->
+    <div id="scheduleLiveModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white">جدولة حصة مباشرة جديدة</h3>
+                <button onclick="closeModal('scheduleLiveModal')" class="text-slate-400 hover:text-slate-600">×</button>
+            </div>
+
+            <form onsubmit="scheduleLiveClassSubmit(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اختر الكورس</label>
+                    <select id="liveCourseSelect" required class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 rounded-xl p-2.5 text-xs focus:outline-none focus:border-teal-600"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">عنوان الحصة المباشرة</label>
+                    <input type="text" id="liveTitle" required placeholder="مثال: مراجعة وحل أسئلة الفصل الأول" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 rounded-xl p-2.5 text-xs focus:outline-none focus:border-teal-600">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">تاريخ ووقت البث المباشر</label>
+                    <input type="datetime-local" id="liveScheduledAt" required class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 rounded-xl p-2.5 text-xs focus:outline-none focus:border-teal-600">
+                </div>
+
+                <p class="text-[11px] text-teal-700 dark:text-teal-300 font-bold bg-teal-50 dark:bg-slate-800 p-2.5 rounded-xl border border-teal-200 dark:border-teal-800">
+                    ⏰ سيتم إرسال إشعار تلقائي ديناميكي لجميع الطلاب المسجلين بالدورة قبل بدء الحصة بـ 15 دقيقة!
+                </p>
+
+                <div class="flex justify-end gap-3 border-t border-slate-100 dark:border-slate-800 pt-4">
+                    <button type="button" onclick="closeModal('scheduleLiveModal')" class="text-slate-500 text-xs font-bold px-4 py-2">إلغاء</button>
+                    <button type="submit" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-6 py-3 rounded-xl shadow-lg text-xs">جدولة وتفعيل التنبيه ➔</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: INTERACTIVE QUIZ MODE -->
+    <div id="quizModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+                <h3 id="quizModalTitle" class="text-xl font-bold text-slate-900 dark:text-white"></h3>
+                <button onclick="closeModal('quizModal')" class="text-slate-400 hover:text-slate-600">×</button>
+            </div>
+
+            <div id="quizQuestionsContainer"></div>
+
+            <div class="flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800 pt-4">
+                <button onclick="closeModal('quizModal')" class="text-slate-500 text-xs font-bold px-4 py-2">إلغاء</button>
+                <button onclick="submitQuizAnswers()" class="bg-emerald-600 text-white font-bold px-6 py-3 rounded-xl shadow-lg hover:bg-emerald-500 transition text-xs">إرسال وتصحيح تلقائي ➔</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: LIVE CLASSROOM SIMULATOR & WHITEBOARD -->
+    <div id="liveClassroomModal" class="fixed inset-0 z-50 bg-slate-950 flex flex-col hidden text-white">
+        <div class="p-4 bg-slate-900 flex items-center justify-between border-b border-slate-800">
+            <div class="flex items-center gap-3">
+                <span class="w-3 h-3 rounded-full bg-rose-500 animate-ping"></span>
+                <span class="font-bold text-sm">الحصة المباشرة التفاعلية في Nexa (WebRTC / Socket.io)</span>
+            </div>
+            <button onclick="closeModal('liveClassroomModal')" class="bg-rose-600/20 text-rose-300 border border-rose-500/30 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-rose-600 hover:text-white transition">مغادرة الغرفة ×</button>
+        </div>
+        
+        <div class="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 overflow-hidden">
+            <div class="lg:col-span-2 flex flex-col gap-4">
+                <div class="h-44 bg-slate-900 rounded-2xl border border-slate-800 p-4 flex items-center justify-between relative overflow-hidden">
+                    <div class="flex items-center gap-4">
+                        <div class="w-20 h-20 bg-teal-800 rounded-xl flex items-center justify-center text-3xl font-black">👨‍🏫</div>
+                        <div>
+                            <h4 class="font-bold text-lg text-teal-300">بث المحاضر المباشر</h4>
+                            <p class="text-xs text-slate-400">حالة الصوت والصورة: نشطة ممتازة HD</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="showToast('تم كتم/تشغيل المايك', 'info')" class="bg-slate-800 hover:bg-slate-700 p-3 rounded-xl text-sm"></button>
+                        <button onclick="showToast('تم إيقاف/تشغيل الكاميرا', 'info')" class="bg-slate-800 hover:bg-slate-700 p-3 rounded-xl text-sm"></button>
+                        <button onclick="state.liveManager && state.liveManager.sendRaiseHand()" class="bg-amber-600 hover:bg-amber-500 px-4 py-2 rounded-xl text-xs font-bold shadow-md"><i data-lucide="hand"></i> رفع اليد</button>
+                    </div>
+                </div>
+
+                <div class="flex-grow bg-white text-slate-900 rounded-2xl p-4 flex flex-col justify-between shadow-2xl">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-teal-700"><i data-lucide="pen-tool"></i> السبورة التفاعلية الحية</span>
+                        <div class="flex items-center gap-2">
+                            <button onclick="state.liveManager.currentColor = '#0d9488'" class="w-5 h-5 rounded-full bg-teal-600 border border-slate-300"></button>
+                            <button onclick="state.liveManager.currentColor = '#e11d48'" class="w-5 h-5 rounded-full bg-rose-600 border border-slate-300"></button>
+                            <button onclick="state.liveManager.currentColor = '#2563eb'" class="w-5 h-5 rounded-full bg-blue-600 border border-slate-300"></button>
+                            <button onclick="state.liveManager.currentColor = '#0f172a'" class="w-5 h-5 rounded-full bg-slate-900 border border-slate-300"></button>
+                            <button onclick="state.liveManager && state.liveManager.clearWhiteboard()" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-1 rounded font-bold">مسح الكل </button>
+                        </div>
+                    </div>
+                    <canvas id="whiteboardCanvas" class="w-full bg-slate-50 border border-slate-200 rounded-xl cursor-crosshair"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 rounded-2xl border border-slate-800 p-4 flex flex-col justify-between">
+                <h4 class="font-bold text-sm text-teal-400 mb-3 pb-2 border-b border-slate-800"><i data-lucide="messages-square"></i> المحادثة التفاعلية الحية</h4>
+                <div id="liveChatMessages" class="flex-grow overflow-y-auto space-y-2 mb-4 text-xs text-slate-300"></div>
+                <div class="flex gap-2">
+                    <input type="text" id="liveChatInput" placeholder="اكتب سؤالك هنا..." class="flex-grow bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-500">
+                    <button onclick="sendLiveChatMessage()" class="bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs px-4 py-2 rounded-xl">إرسال</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: RAG AI TUTOR CHAT DRAWER -->
+    <div id="ragDrawerModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-end hidden">
+        <div class="bg-white dark:bg-slate-900 h-full max-w-md w-full p-6 shadow-2xl flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl"><i data-lucide="bot"></i></span>
+                        <div>
+                            <h4 class="font-bold text-slate-900 dark:text-white text-sm">معلم الذكاء الاصطناعي في Nexa (AI Tutor)</h4>
+                            <span class="text-[10px] text-teal-600 dark:text-teal-400 font-bold">إجابات موثوقة ومربوطة بالمنهج</span>
+                        </div>
+                    </div>
+                    <button onclick="closeModal('ragDrawerModal')" class="text-slate-400 hover:text-slate-600">×</button>
+                </div>
+
+                <div id="ragChatBox" class="h-[65vh] overflow-y-auto p-2"></div>
+            </div>
+
+            <div class="border-t border-slate-100 dark:border-slate-800 pt-4 flex gap-2">
+                <input type="text" id="ragInput" placeholder="اسأل سؤالاً حول الدروس..." class="flex-grow bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-teal-600">
+                <button onclick="sendRagQuestion()" class="bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs px-5 py-3 rounded-xl shadow-md">إرسال</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: TEACHER COURSE BUILDER WITH AI OUTLINE GENERATOR -->
+    <div id="createCourseModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white">إنشاء دورة تعليمية جديدة في Nexa</h3>
+                <button onclick="closeModal('createCourseModal')" class="text-slate-400 hover:text-slate-600">×</button>
+            </div>
+
+            <div class="bg-teal-50 dark:bg-slate-800 border border-teal-200 dark:border-teal-800 p-4 rounded-2xl mb-6">
+                <span class="text-xs font-bold text-teal-800 dark:text-teal-300 block mb-2"><i data-lucide="sparkles"></i> المساعد الذكي للمعلم</span>
+                <div class="flex gap-2">
+                    <input type="text" id="aiTopicInput" placeholder="مثل: أساسيات لغة Python من الصفر..." class="flex-grow bg-white dark:bg-slate-900 border border-teal-300 dark:border-teal-700 rounded-xl px-3 py-2 text-xs focus:outline-none">
+                    <button onclick="triggerAiOutlineGenerator()" class="bg-teal-700 text-white font-bold text-xs px-4 py-2 rounded-xl hover:bg-teal-600 transition">توليد الهيكل</button>
+                </div>
+            </div>
+
+            <form onsubmit="createNewCourseSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">عنوان الكورس</label>
+                    <input type="text" id="newCourseTitle" required class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 rounded-xl p-3 text-xs focus:outline-none focus:border-teal-600">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">وصف الكورس والأهداف</label>
+                    <textarea id="newCourseDesc" required rows="3" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 rounded-xl p-3 text-xs focus:outline-none focus:border-teal-600"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">السعر بالجنيه المصري (0 للمجاني)</label>
+                    <input type="number" id="newCoursePrice" value="500" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 rounded-xl p-3 text-xs focus:outline-none focus:border-teal-600">
+                </div>
+                <div class="flex justify-end gap-3 border-t border-slate-100 dark:border-slate-800 pt-4">
+                    <button type="button" onclick="closeModal('createCourseModal')" class="text-slate-500 text-xs font-bold px-4 py-2">إلغاء</button>
+                    <button type="submit" class="bg-teal-600 text-white font-bold px-6 py-3 rounded-xl shadow-lg hover:bg-teal-500 text-xs">حفظ ونشر ➔</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/waves.js"></script>
+    <script src="/static/js/rtc_classroom.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script>
+      lucide.createIcons();
+    </script>
+</body>
+</html>
